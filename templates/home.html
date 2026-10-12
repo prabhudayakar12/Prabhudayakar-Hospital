@@ -1,0 +1,366 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}CarePulse Hospital | Premier Healthcare & Doctor Appointments{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+  <div class="container">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-7">
+        <div class="hero-badge">
+          <span class="pulse-dot"></span> Certified Hospital & 24/7 Outpatient Care
+        </div>
+        <h1 class="hero-title">
+          Your Health, Our Priority. <br>
+          <span class="text-gradient">Expert Medical Care</span> at Your Fingertips.
+        </h1>
+        <p class="hero-lead">
+          Connect with top-rated medical specialists across Cardiology, Pediatrics, Orthopedics, and Neurology. Check live doctor availability and book your appointment instantly.
+        </p>
+
+        <div class="d-flex flex-wrap gap-3 mb-4">
+          <a href="{% url 'doctor_list' %}" class="btn btn-primary-custom btn-lg btn-pill shadow d-inline-flex align-items-center gap-2">
+            <i class="fas fa-calendar-check"></i> Book an Appointment
+          </a>
+          <a href="{% url 'patient_dashboard' %}" class="btn btn-secondary-custom btn-lg btn-pill d-inline-flex align-items-center gap-2">
+            <i class="fas fa-clipboard-user text-primary"></i> Patient Portal
+          </a>
+        </div>
+
+        <div class="d-flex flex-wrap align-items-center gap-4 pt-2 text-muted small">
+          <div class="d-flex align-items-center gap-2">
+            <i class="fas fa-circle-check text-success fs-5"></i>
+            <span>Zero Double-Booking Guarantee</span>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <i class="fas fa-circle-check text-success fs-5"></i>
+            <span>Verified Board Specialists</span>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <i class="fas fa-circle-check text-success fs-5"></i>
+            <span>Instant Digital Confirmation</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-5">
+        <div class="hero-card-preview">
+          <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge bg-primary-subtle text-primary fw-bold px-3 py-2 rounded-pill">
+                <i class="fas fa-stethoscope me-1"></i> Quick Doctor Finder
+              </span>
+            </div>
+            <span class="small text-muted"><i class="fas fa-shield-halved text-success me-1"></i> Secure Booking</span>
+          </div>
+
+          <h5 class="fw-bold mb-3">Find & Schedule Your Doctor</h5>
+
+          <form action="{% url 'doctor_list' %}" method="GET">
+            <div class="mb-3">
+              <label class="form-label small text-muted">Department</label>
+              <select name="department" class="form-select">
+                <option value="All">All Clinical Departments</option>
+                {% for dept in departments_data %}
+                  <option value="{{ dept.name }}">{{ dept.label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small text-muted">Doctor Name or Condition</label>
+              <div class="input-group">
+                <span class="input-group-text bg-white border-end-0"><i class="fas fa-magnifying-glass text-muted"></i></span>
+                <input type="text" name="q" class="form-control border-start-0" placeholder="e.g. Heart, Dr. Jenkins...">
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary-custom w-100 py-2">
+              <i class="fas fa-search me-1"></i> Search Available Doctors
+            </button>
+          </form>
+
+          <div class="mt-3 p-3 bg-light rounded-3 d-flex align-items-center justify-content-between">
+            <div class="small">
+              <i class="fas fa-headset text-primary me-1"></i> Need Urgent Assistance?
+            </div>
+            <a href="tel:18009992273" class="fw-bold text-decoration-none text-danger small">
+              1-800-999-CARE
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Hospital Statistics Banner -->
+<section class="py-4 bg-white border-bottom border-top">
+  <div class="container">
+    <div class="row g-4 text-center">
+      <div class="col-6 col-md-3">
+        <div class="stat-card justify-content-center">
+          <div class="stat-icon bg-primary-subtle text-primary">
+            <i class="fas fa-user-doctor"></i>
+          </div>
+          <div class="text-start">
+            <div class="stat-number">{{ total_doctors }}+</div>
+            <div class="stat-label">Specialist Doctors</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card justify-content-center">
+          <div class="stat-icon bg-success-subtle text-success">
+            <i class="fas fa-hospital-user"></i>
+          </div>
+          <div class="text-start">
+            <div class="stat-number">{{ total_patients }}+</div>
+            <div class="stat-label">Registered Patients</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card justify-content-center">
+          <div class="stat-icon bg-warning-subtle text-warning">
+            <i class="fas fa-calendar-check"></i>
+          </div>
+          <div class="text-start">
+            <div class="stat-number">{{ total_appointments }}+</div>
+            <div class="stat-label">Appointments Booked</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card justify-content-center">
+          <div class="stat-icon bg-info-subtle text-info">
+            <i class="fas fa-award"></i>
+          </div>
+          <div class="text-start">
+            <div class="stat-number">99.8%</div>
+            <div class="stat-label">Patient Satisfaction</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Clinical Departments Section -->
+<section class="py-5">
+  <div class="container">
+    <div class="text-center max-w-700 mx-auto mb-5">
+      <span class="badge bg-primary-subtle text-primary fw-bold px-3 py-2 rounded-pill mb-2">
+        Clinical Specialities
+      </span>
+      <h2 class="display-6 fw-bold">Explore Our Specialized Departments</h2>
+      <p class="text-muted">
+        Comprehensive clinical care backed by board-certified physicians and cutting-edge medical technologies.
+      </p>
+    </div>
+
+    <div class="row g-4">
+      {% for dept in departments_data %}
+        <div class="col-md-4 col-sm-6">
+          <a href="{% url 'doctor_list' %}?department={{ dept.name }}" class="text-decoration-none">
+            <div class="card card-modern h-100 p-4 border-0">
+              <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="stat-icon bg-primary-subtle text-primary fs-3">
+                  <i class="fas {{ dept.icon }}"></i>
+                </div>
+                <span class="badge bg-light text-dark border px-2 py-1">
+                  {{ dept.count }} Specialist{% if dept.count != 1 %}s{% endif %}
+                </span>
+              </div>
+              <h5 class="fw-bold mb-2 text-dark">{{ dept.label }}</h5>
+              <p class="text-muted small mb-3">
+                Advanced diagnosis, therapeutic care, and dedicated outpatient treatment for all age groups.
+              </p>
+              <div class="d-flex align-items-center text-primary fw-semibold small mt-auto">
+                <span>View Specialists</span>
+                <i class="fas fa-arrow-right ms-2"></i>
+              </div>
+            </div>
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- Featured Doctors Section -->
+<section class="py-5 bg-white border-top border-bottom">
+  <div class="container">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end mb-5">
+      <div>
+        <span class="badge bg-primary-subtle text-primary fw-bold px-3 py-2 rounded-pill mb-2">
+          Leading Experts
+        </span>
+        <h2 class="display-6 fw-bold mb-1">Meet Our Senior Physicians</h2>
+        <p class="text-muted mb-0">Book directly with our distinguished consultants and department heads.</p>
+      </div>
+      <a href="{% url 'doctor_list' %}" class="btn btn-secondary-custom btn-pill mt-3 mt-md-0 d-inline-flex align-items-center gap-2">
+        <span>View All Doctors</span> <i class="fas fa-arrow-right"></i>
+      </a>
+    </div>
+
+    <div class="row g-4">
+      {% for doc in featured_doctors %}
+        <div class="col-lg-3 col-md-6">
+          <div class="card card-modern h-100 border-0 p-3">
+            <div class="d-flex align-items-start gap-3 mb-3">
+              <div class="doctor-avatar-circle">
+                <i class="fas fa-user-doctor"></i>
+              </div>
+              <div class="overflow-hidden">
+                <span class="doctor-badge-dept dept-{{ doc.department }} d-inline-block text-truncate">
+                  {{ doc.department }}
+                </span>
+                <h6 class="fw-bold mb-0 mt-1 text-truncate">Dr. {{ doc.name }}</h6>
+                <small class="text-muted d-block text-truncate">{{ doc.qualification }}</small>
+              </div>
+            </div>
+
+            <p class="text-muted small mb-3 flex-grow-1">
+              <strong>Specialization:</strong> {{ doc.specialization }}<br>
+              <strong>Experience:</strong> {{ doc.experience_years }}+ Years
+            </p>
+
+            <div class="p-2 bg-light rounded-3 mb-3 small">
+              <div class="d-flex justify-content-between mb-1">
+                <span class="text-muted">Available Days:</span>
+                <span class="fw-bold text-dark">{{ doc.available_days }}</span>
+              </div>
+              <div class="d-flex justify-content-between">
+                <span class="text-muted">Consultation Fee:</span>
+                <span class="fw-bold text-primary">${{ doc.consultation_fee }}</span>
+              </div>
+            </div>
+
+            <div class="d-grid gap-2">
+              <a href="{% url 'appointment_book' doc.id %}" class="btn btn-primary-custom btn-sm">
+                <i class="fas fa-calendar-plus me-1"></i> Book Appointment
+              </a>
+              <a href="{% url 'doctor_detail' doc.id %}" class="btn btn-outline-secondary btn-sm">
+                View Profile
+              </a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- Hospital Services Section -->
+<section class="py-5">
+  <div class="container">
+    <div class="text-center max-w-700 mx-auto mb-5">
+      <span class="badge bg-secondary-subtle text-secondary fw-bold px-3 py-2 rounded-pill mb-2">
+        Patient Care Services
+      </span>
+      <h2 class="display-6 fw-bold">Comprehensive Healthcare Facilities</h2>
+      <p class="text-muted">Equipped with world-class medical infrastructure for patient comfort and care.</p>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="card card-modern h-100 p-4 border-0">
+          <div class="stat-icon bg-danger-subtle text-danger mb-3">
+            <i class="fas fa-truck-medical"></i>
+          </div>
+          <h5 class="fw-bold mb-2">24/7 Emergency & Trauma</h5>
+          <p class="text-muted small">
+            Fully equipped emergency room, dedicated triage team, rapid response trauma unit, and on-call surgeons day and night.
+          </p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card card-modern h-100 p-4 border-0">
+          <div class="stat-icon bg-primary-subtle text-primary mb-3">
+            <i class="fas fa-microscope"></i>
+          </div>
+          <h5 class="fw-bold mb-2">Advanced Diagnostic Lab</h5>
+          <p class="text-muted small">
+            State-of-the-art clinical biochemistry, hematology, digital MRI, 128-slice CT scans, and computerized ECG facilities.
+          </p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card card-modern h-100 p-4 border-0">
+          <div class="stat-icon bg-success-subtle text-success mb-3">
+            <i class="fas fa-laptop-medical"></i>
+          </div>
+          <h5 class="fw-bold mb-2">Digital Medical Records</h5>
+          <p class="text-muted small">
+            Instant digital prescriptions, clinical diagnosis summaries, and medical history access directly on your patient portal.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Why Choose Us & Trust Section -->
+<section class="py-5 bg-white border-top">
+  <div class="container">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-6">
+        <span class="badge bg-primary-subtle text-primary fw-bold px-3 py-2 rounded-pill mb-2">
+          Why CarePulse
+        </span>
+        <h2 class="display-6 fw-bold mb-4">Patient-First Healthcare Centered Around You</h2>
+
+        <div class="d-flex gap-3 mb-4">
+          <div class="stat-icon bg-primary-subtle text-primary mt-1">
+            <i class="fas fa-stopwatch"></i>
+          </div>
+          <div>
+            <h6 class="fw-bold mb-1">Interactive Real-Time Slot Scheduling</h6>
+            <p class="text-muted small mb-0">Select your preferred date and exact time slot with live availability checking that eliminates hospital queue waiting.</p>
+          </div>
+        </div>
+
+        <div class="d-flex gap-3 mb-4">
+          <div class="stat-icon bg-success-subtle text-success mt-1">
+            <i class="fas fa-user-check"></i>
+          </div>
+          <div>
+            <h6 class="fw-bold mb-1">Pre-Screened Board Specialists</h6>
+            <p class="text-muted small mb-0">Every physician on our portal undergoes stringent credential verification and active board certification.</p>
+          </div>
+        </div>
+
+        <div class="d-flex gap-3">
+          <div class="stat-icon bg-info-subtle text-info mt-1">
+            <i class="fas fa-lock"></i>
+          </div>
+          <div>
+            <h6 class="fw-bold mb-1">Double Booking Protection</h6>
+            <p class="text-muted small mb-0">Robust server-side constraint checks prevent overlapping appointments, ensuring your doctor is exclusively reserved for you.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="p-4 p-md-5 bg-primary rounded-4 text-white position-relative shadow-lg" style="background: linear-gradient(135deg, #0284c7 0%, #0f172a 100%);">
+          <h3 class="fw-bold mb-3">Ready to Schedule Your Visit?</h3>
+          <p class="text-white-50 mb-4">
+            Take the first step toward better health today. View doctor availability or check your booked appointment status on our digital portal.
+          </p>
+          <div class="d-flex flex-wrap gap-3">
+            <a href="{% url 'doctor_list' %}" class="btn btn-light btn-pill fw-bold text-primary px-4 py-2">
+              Book Appointment Now
+            </a>
+            <a href="{% url 'patient_dashboard' %}" class="btn btn-outline-light btn-pill px-4 py-2">
+              Check Appointment Status
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

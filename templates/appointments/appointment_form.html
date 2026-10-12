@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Book Appointment with Dr. {{ doctor.name }} | CarePulse Hospital{% endblock %}
+
+{% block content %}
+<section class="py-4 bg-light border-bottom">
+  <div class="container">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-2 small">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'doctor_list' %}">Specialists</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Book Appointment</li>
+      </ol>
+    </nav>
+    <h2 class="fw-bold mb-1">Book an Outpatient Consultation</h2>
+    <p class="text-muted mb-0 small">Select your preferred date, pick an open time slot, and fill in patient particulars.</p>
+  </div>
+</section>
+
+<!-- Data anchor for appointments.js -->
+<div id="doctorBookingData" data-doctor-id="{{ doctor.id }}" class="d-none"></div>
+
+<section class="py-5">
+  <div class="container">
+    <div class="row g-4">
+      <!-- Doctor Summary Left Column -->
+      <div class="col-lg-4">
+        <div class="card card-modern p-4 border-0 mb-4 sticky-top" style="top: 90px;">
+          <span class="badge bg-primary-subtle text-primary fw-bold px-3 py-2 rounded-pill mb-3 align-self-start">
+            Doctor Profile
+          </span>
+
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <div class="doctor-avatar-circle" style="width: 64px; height: 64px; font-size: 1.75rem;">
+              <i class="fas fa-user-doctor"></i>
+            </div>
+            <div>
+              <span class="doctor-badge-dept dept-{{ doctor.department }}">{{ doctor.department }}</span>
+              <h5 class="fw-bold mb-0 mt-1">Dr. {{ doctor.name }}</h5>
+              <small class="text-muted">{{ doctor.qualification }}</small>
+            </div>
+          </div>
+
+          <div class="p-3 bg-light rounded-3 mb-3 small">
+            <div class="d-flex justify-content-between mb-2">
+              <span class="text-muted">Specialization:</span>
+              <span class="fw-semibold text-dark">{{ doctor.specialization }}</span>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+              <span class="text-muted">Experience:</span>
+              <span class="fw-semibold text-dark">{{ doctor.experience_years }}+ Years</span>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+              <span class="text-muted">Available Days:</span>
+              <span class="fw-bold text-dark">{{ doctor.available_days }}</span>
+            </div>
+            <div class="d-flex justify-content-between pt-2 border-top">
+              <span class="text-muted">Consultation Fee:</span>
+              <span class="fw-bold text-primary fs-6">${{ doctor.consultation_fee }}</span>
+            </div>
+          </div>
+
+          <div class="alert alert-info py-2 px-3 small border-0 mb-0">
+            <i class="fas fa-circle-info me-1"></i>
+            Appointments are confirmed in 30-minute intervals. Please arrive 10 minutes prior to your slot.
+          </div>
+        </div>
+      </div>
+
+      <!-- Booking Form Right Column -->
+      <div class="col-lg-8">
+        <div class="card card-modern p-4 p-md-5 border-0">
+          <h4 class="fw-bold mb-4 pb-2 border-bottom">
+            <i class="fas fa-calendar-check text-primary me-2"></i> Schedule Appointment
+          </h4>
+
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger shadow-sm border-0 mb-4" role="alert">
+              <div class="fw-bold mb-1"><i class="fas fa-triangle-exclamation me-1"></i> Booking Error:</div>
+              {% for error in form.non_field_errors %}
+                <div>{{ error }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          <form method="POST" id="appointmentBookingForm" novalidate>
+            {% csrf_token %}
+
+            <!-- SECTION 1: Patient Information -->
+            <h5 class="fw-bold mb-3 text-dark">
+              <i class="fas fa-user-pen text-secondary me-2"></i> 1. Patient Particulars
+            </h5>
+
+            <div class="row g-3 mb-4">
+              <div class="col-md-6">
+                <label for="patient_name" class="form-label">Full Name <span class="text-danger">*</span></label>
+                {{ form.patient_name }}
+                {% if form.patient_name.errors %}
+                  <div class="text-danger small mt-1">{{ form.patient_name.errors.0 }}</div>
+                {% endif %}
+              </div>
+
+              <div class="col-md-6">
+                <label for="patient_phone" class="form-label">Phone Number <span class="text-danger">*</span></label>
+                {{ form.patient_phone }}
+                <div class="form-text small">Used for SMS confirmation and tracking your dashboard.</div>
+                {% if form.patient_phone.errors %}
+                  <div class="text-danger small mt-1">{{ form.patient_phone.errors.0 }}</div>
+                {% endif %}
+              </div>
+
+              <div class="col-md-6">
+                <label for="patient_email" class="form-label">Email Address <span class="text-danger">*</span></label>
+                {{ form.patient_email }}
+                {% if form.patient_email.errors %}
+                  <div class="text-danger small mt-1">{{ form.patient_email.errors.0 }}</div>
+                {% endif %}
+              </div>
+
+              <div class="col-md-6">
+                <label for="date_of_birth" class="form-label">Date of Birth <span class="text-danger">*</span></label>
+                {{ form.date_of_birth }}
+                {% if form.date_of_birth.errors %}
+                  <div class="text-danger small mt-1">{{ form.date_of_birth.errors.0 }}</div>
+                {% endif %}
+              </div>
+
+              <div class="col-md-6">
+                <label for="gender" class="form-label">Gender <span class="text-danger">*</span></label>
+                {{ form.gender }}
+                {% if form.gender.errors %}
+                  <div class="text-danger small mt-1">{{ form.gender.errors.0 }}</div>
+                {% endif %}
+              </div>
+
+              <div class="col-md-6">
+                <label for="blood_group" class="form-label">Blood Group (Optional)</label>
+                {{ form.blood_group }}
+              </div>
+
+              <div class="col-12">
+                <label for="address" class="form-label">Residential Address (Optional)</label>
+                {{ form.address }}
+              </div>
+            </div>
+
+            <!-- SECTION 2: Appointment Date & Time Slot Selection -->
+            <h5 class="fw-bold mb-3 text-dark pt-3 border-top">
+              <i class="fas fa-calendar-days text-secondary me-2"></i> 2. Select Date & Interactive Time Slot
+            </h5>
+
+            <div class="row g-3 mb-4">
+              <div class="col-md-6">
+                <label for="appointment_date" class="form-label">Appointment Date <span class="text-danger">*</span></label>
+                {{ form.appointment_date }}
+                <div class="form-text small">
+                  Consultation days: <strong>{{ doctor.available_days }}</strong>. Dates in the past are disallowed.
+                </div>
+                {% if form.appointment_date.errors %}
+                  <div class="text-danger small mt-1">{{ form.appointment_date.errors.0 }}</div>
+                {% endif %}
+              </div>
+
+              <div class="col-md-6 d-flex align-items-center">
+                <div class="p-3 bg-light rounded-3 w-100">
+                  <span class="small text-muted d-block">Selected Slot:</span>
+                  <span id="selectedSlotDisplay" class="badge bg-primary text-white fs-6 py-2 px-3 mt-1 d-none">
+                    None selected
+                  </span>
+                </div>
+              </div>
+
+              <!-- Hidden form input for time_slot -->
+              {{ form.time_slot }}
+              {% if form.time_slot.errors %}
+                <div class="col-12">
+                  <div class="alert alert-danger py-2 small mb-0">{{ form.time_slot.errors.0 }}</div>
+                </div>
+              {% endif %}
+
+              <!-- Dynamic Interactive Slots Container -->
+              <div class="col-12 mt-3">
+                <label class="form-label d-block">
+                  Available Consultation Slots <span class="text-danger">*</span>
+                </label>
+
+                <!-- Dynamic Alert for doctor absence / past date / errors -->
+                <div id="slotsAlert" class="alert d-none"></div>
+
+                <!-- Loading Spinner -->
+                <div id="slotsLoading" class="text-center py-4 d-none">
+                  <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Checking slot availability...</span>
+                  </div>
+                  <p class="small text-muted mt-2 mb-0">Checking doctor availability and booked slots...</p>
+                </div>
+
+                <!-- Rendered Slots Grid -->
+                <div id="slotsContainer"></div>
+              </div>
+            </div>
+
+            <!-- SECTION 3: Clinical Reason -->
+            <h5 class="fw-bold mb-3 text-dark pt-3 border-top">
+              <i class="fas fa-notes-medical text-secondary me-2"></i> 3. Reason for Consultation
+            </h5>
+
+            <div class="mb-4">
+              <label for="reason" class="form-label">Symptoms / Chief Complaints <span class="text-danger">*</span></label>
+              {{ form.reason }}
+              <div class="form-text small">Please briefly describe what you are experiencing to assist Dr. {{ doctor.name }}.</div>
+              {% if form.reason.errors %}
+                <div class="text-danger small mt-1">{{ form.reason.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Submit Button -->
+            <div class="d-grid mt-4">
+              <button type="submit" class="btn btn-primary-custom btn-lg py-3 shadow">
+                <i class="fas fa-lock me-2"></i> Confirm & Book Appointment
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/appointments.js' %}"></script>
+{% endblock %}

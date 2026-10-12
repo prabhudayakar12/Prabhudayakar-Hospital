@@ -1,0 +1,290 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Staff Appointment Management | CarePulse Hospital{% endblock %}
+
+{% block content %}
+<section class="py-4 bg-white border-bottom">
+  <div class="container-fluid px-lg-5">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+      <div>
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-1 small">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Staff Portal</li>
+          </ol>
+        </nav>
+        <h1 class="h3 fw-bold mb-0">Hospital Appointment Management</h1>
+        <small class="text-muted">Logged in as: <strong>{{ user.username }}</strong> &bull; Role: Medical Staff / Hospital Administrator</small>
+      </div>
+
+      <div class="d-flex gap-2">
+        <a href="{% url 'admin:index' %}" class="btn btn-outline-dark btn-sm">
+          <i class="fas fa-database me-1"></i> Django Admin
+        </a>
+        <a href="{% url 'logout' %}" class="btn btn-outline-danger btn-sm">
+          <i class="fas fa-sign-out-alt me-1"></i> Logout
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="py-4 bg-light">
+  <div class="container-fluid px-lg-5">
+    <!-- Top Metrics Overview -->
+    <div class="row g-3 mb-4">
+      <div class="col-xl-2 col-md-4 col-6">
+        <div class="stat-card p-3">
+          <div class="stat-icon bg-primary-subtle text-primary" style="width: 44px; height: 44px; font-size: 1.15rem;">
+            <i class="fas fa-calendar-day"></i>
+          </div>
+          <div>
+            <div class="fs-4 fw-bold text-dark">{{ metrics.today }}</div>
+            <div class="small text-muted fw-semibold">Today's Appts</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-xl-2 col-md-4 col-6">
+        <div class="stat-card p-3">
+          <div class="stat-icon bg-warning-subtle text-warning" style="width: 44px; height: 44px; font-size: 1.15rem;">
+            <i class="fas fa-hourglass-half"></i>
+          </div>
+          <div>
+            <div class="fs-4 fw-bold text-warning">{{ metrics.pending }}</div>
+            <div class="small text-muted fw-semibold">Pending Action</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-xl-2 col-md-4 col-6">
+        <div class="stat-card p-3">
+          <div class="stat-icon bg-primary-subtle text-primary" style="width: 44px; height: 44px; font-size: 1.15rem;">
+            <i class="fas fa-check-double"></i>
+          </div>
+          <div>
+            <div class="fs-4 fw-bold text-primary">{{ metrics.confirmed }}</div>
+            <div class="small text-muted fw-semibold">Confirmed</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-xl-2 col-md-4 col-6">
+        <div class="stat-card p-3">
+          <div class="stat-icon bg-success-subtle text-success" style="width: 44px; height: 44px; font-size: 1.15rem;">
+            <i class="fas fa-circle-check"></i>
+          </div>
+          <div>
+            <div class="fs-4 fw-bold text-success">{{ metrics.completed }}</div>
+            <div class="small text-muted fw-semibold">Completed</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-xl-2 col-md-4 col-6">
+        <div class="stat-card p-3">
+          <div class="stat-icon bg-danger-subtle text-danger" style="width: 44px; height: 44px; font-size: 1.15rem;">
+            <i class="fas fa-ban"></i>
+          </div>
+          <div>
+            <div class="fs-4 fw-bold text-danger">{{ metrics.cancelled }}</div>
+            <div class="small text-muted fw-semibold">Cancelled</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-xl-2 col-md-4 col-6">
+        <div class="stat-card p-3">
+          <div class="stat-icon bg-info-subtle text-info" style="width: 44px; height: 44px; font-size: 1.15rem;">
+            <i class="fas fa-layer-group"></i>
+          </div>
+          <div>
+            <div class="fs-4 fw-bold text-dark">{{ metrics.total }}</div>
+            <div class="small text-muted fw-semibold">Total All-Time</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter & Search Toolbar -->
+    <div class="card card-modern p-3 border-0 mb-4">
+      <form method="GET" action="{% url 'staff_appointments' %}">
+        <div class="row g-3 align-items-center">
+          <!-- Status Tabs -->
+          <div class="col-xl-4 col-lg-5">
+            <div class="filter-pills-wrap">
+              <a href="{% url 'staff_appointments' %}?status=All{% if doctor_filter %}&doctor={{ doctor_filter }}{% endif %}{% if date_filter %}&date={{ date_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}"
+                 class="dept-filter-btn {% if status_filter == 'All' or not status_filter %}active{% endif %}">
+                All ({{ metrics.total }})
+              </a>
+              <a href="{% url 'staff_appointments' %}?status=Pending{% if doctor_filter %}&doctor={{ doctor_filter }}{% endif %}{% if date_filter %}&date={{ date_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}"
+                 class="dept-filter-btn {% if status_filter == 'Pending' %}active{% endif %}">
+                Pending ({{ metrics.pending }})
+              </a>
+              <a href="{% url 'staff_appointments' %}?status=Confirmed{% if doctor_filter %}&doctor={{ doctor_filter }}{% endif %}{% if date_filter %}&date={{ date_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}"
+                 class="dept-filter-btn {% if status_filter == 'Confirmed' %}active{% endif %}">
+                Confirmed ({{ metrics.confirmed }})
+              </a>
+              <a href="{% url 'staff_appointments' %}?status=Completed{% if doctor_filter %}&doctor={{ doctor_filter }}{% endif %}{% if date_filter %}&date={{ date_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}"
+                 class="dept-filter-btn {% if status_filter == 'Completed' %}active{% endif %}">
+                Completed ({{ metrics.completed }})
+              </a>
+            </div>
+          </div>
+
+          <!-- Doctor Filter Dropdown -->
+          <div class="col-xl-3 col-lg-3 col-md-4">
+            <select name="doctor" class="form-select form-select-sm" onchange="this.form.submit()">
+              <option value="">-- Filter by Doctor --</option>
+              {% for doc in doctors_list %}
+                <option value="{{ doc.id }}" {% if doctor_filter == doc.id|stringformat:"s" %}selected{% endif %}>
+                  Dr. {{ doc.name }} ({{ doc.department }})
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Date Filter -->
+          <div class="col-xl-2 col-lg-2 col-md-3">
+            <input type="date" name="date" value="{{ date_filter }}" class="form-control form-control-sm" onchange="this.form.submit()" title="Filter by date">
+          </div>
+
+          <!-- Text Search Box -->
+          <div class="col-xl-3 col-lg-2 col-md-5">
+            <div class="input-group input-group-sm">
+              <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Search patient, phone...">
+              <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i></button>
+              {% if status_filter != 'All' or doctor_filter or date_filter or search_query %}
+                <a href="{% url 'staff_appointments' %}" class="btn btn-outline-secondary" title="Clear Filters"><i class="fas fa-times"></i></a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Appointments Table -->
+    <div class="card card-modern border-0 overflow-hidden shadow-sm">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light text-uppercase small text-muted" style="letter-spacing: 0.04em;">
+            <tr>
+              <th style="width: 80px;">Token</th>
+              <th>Patient Info</th>
+              <th>Doctor & Dept</th>
+              <th>Date & Time</th>
+              <th>Reason</th>
+              <th>Status</th>
+              <th>Medical Report</th>
+              <th class="text-end" style="min-width: 220px;">Staff Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for appt in appointments %}
+              <tr>
+                <td class="fw-bold text-dark">
+                  #CP-{{ appt.id }}
+                </td>
+
+                <td>
+                  <div class="fw-bold text-dark">{{ appt.patient.name }}</div>
+                  <div class="small text-muted"><i class="fas fa-phone me-1"></i> {{ appt.patient.phone }}</div>
+                  <div class="small text-muted">{{ appt.patient.gender }} &bull; Age {{ appt.patient.get_age|default:"N/A" }}</div>
+                </td>
+
+                <td>
+                  <div class="fw-semibold">Dr. {{ appt.doctor.name }}</div>
+                  <span class="doctor-badge-dept dept-{{ appt.doctor.department }} small">
+                    {{ appt.doctor.department }}
+                  </span>
+                </td>
+
+                <td>
+                  <div class="fw-bold">{{ appt.date|date:"D, M d, Y" }}</div>
+                  <div class="small text-primary fw-semibold"><i class="fas fa-clock me-1"></i>{{ appt.time_slot }}</div>
+                </td>
+
+                <td class="small text-muted" style="max-width: 200px;">
+                  <span class="d-inline-block text-truncate" style="max-width: 200px;" title="{{ appt.reason }}">
+                    {{ appt.reason }}
+                  </span>
+                </td>
+
+                <td>
+                  <span class="badge badge-status {{ appt.status }}">
+                    {{ appt.status }}
+                  </span>
+                </td>
+
+                <td>
+                  {% if appt.medical_report %}
+                    <a href="{% url 'staff_medical_report' appt.id %}" class="badge bg-success-subtle text-success text-decoration-none border border-success-subtle p-2">
+                      <i class="fas fa-file-circle-check me-1"></i> Report Issued
+                    </a>
+                  {% else %}
+                    {% if appt.status == 'Completed' %}
+                      <a href="{% url 'staff_medical_report' appt.id %}" class="btn btn-sm btn-outline-primary py-1">
+                        <i class="fas fa-plus me-1"></i> Add Report
+                      </a>
+                    {% else %}
+                      <span class="text-muted small">&mdash;</span>
+                    {% endif %}
+                  {% endif %}
+                </td>
+
+                <td class="text-end">
+                  <div class="btn-group btn-group-sm" role="group">
+                    <!-- Action: Confirm -->
+                    {% if appt.status == 'Pending' %}
+                      <a href="{% url 'staff_appointment_confirm' appt.id %}" class="btn btn-primary" title="Confirm Appointment">
+                        <i class="fas fa-check me-1"></i> Confirm
+                      </a>
+                    {% endif %}
+
+                    <!-- Action: Complete -->
+                    {% if appt.status == 'Confirmed' %}
+                      <a href="{% url 'staff_appointment_complete' appt.id %}" class="btn btn-success" title="Mark Consultation Completed">
+                        <i class="fas fa-clipboard-check me-1"></i> Complete
+                      </a>
+                    {% endif %}
+
+                    <!-- Action: Medical Report -->
+                    {% if appt.status == 'Completed' %}
+                      <a href="{% url 'staff_medical_report' appt.id %}" class="btn btn-info text-white" title="Manage Medical Report">
+                        <i class="fas fa-file-waveform me-1"></i> Report
+                      </a>
+                    {% endif %}
+
+                    <!-- Action: Cancel -->
+                    {% if appt.status != 'Cancelled' and appt.status != 'Completed' %}
+                      <a href="{% url 'staff_appointment_cancel' appt.id %}"
+                         class="btn btn-outline-danger"
+                         data-confirm="Are you sure you want to cancel Appointment #CP-{{ appt.id }} for {{ appt.patient.name }}?"
+                         title="Cancel Appointment">
+                        <i class="fas fa-times"></i> Cancel
+                      </a>
+                    {% endif %}
+
+                    <!-- View slip -->
+                    <a href="{% url 'appointment_success' appt.id %}" class="btn btn-outline-secondary" title="View Patient Slip" target="_blank">
+                      <i class="fas fa-receipt"></i>
+                    </a>
+                  </div>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="8" class="text-center py-5 text-muted">
+                  <i class="fas fa-calendar-xmark fs-2 mb-2 d-block"></i>
+                  No appointments found matching your filters.
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

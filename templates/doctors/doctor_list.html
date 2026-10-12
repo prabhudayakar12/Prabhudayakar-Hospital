@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Our Medical Specialists & Doctors | CarePulse Hospital{% endblock %}
+
+{% block content %}
+<section class="py-5 bg-white border-bottom">
+  <div class="container">
+    <div class="row align-items-center g-3">
+      <div class="col-lg-8">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-2 small">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Specialists</li>
+          </ol>
+        </nav>
+        <h1 class="display-6 fw-bold mb-2">Find Your Specialist Doctor</h1>
+        <p class="text-muted mb-0">Browse our accredited medical faculty, view consultation fees and schedules, and schedule an appointment.</p>
+      </div>
+      <div class="col-lg-4 text-lg-end">
+        <a href="{% url 'patient_dashboard' %}" class="btn btn-secondary-custom btn-pill">
+          <i class="fas fa-clipboard-check text-primary me-1"></i> Track My Appointments
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="py-4 bg-light">
+  <div class="container">
+    <!-- Filter and Search Controls -->
+    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4">
+      <div class="row g-3 align-items-center">
+        <!-- Department Filter Pills -->
+        <div class="col-lg-8">
+          <div class="filter-pills-wrap">
+            <span class="small text-muted fw-bold me-1"><i class="fas fa-filter me-1"></i> Department:</span>
+            {% for opt in filter_options %}
+              <a href="{% url 'doctor_list' %}?department={{ opt.id }}{% if search_query %}&q={{ search_query }}{% endif %}"
+                 class="dept-filter-btn {% if selected_dept == opt.id %}active{% endif %}">
+                {{ opt.label }}
+                <span class="badge">{{ opt.count }}</span>
+              </a>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Live / Server Search Box -->
+        <div class="col-lg-4">
+          <form method="GET" action="{% url 'doctor_list' %}" class="d-flex gap-2">
+            {% if selected_dept and selected_dept != 'All' %}
+              <input type="hidden" name="department" value="{{ selected_dept }}">
+            {% endif %}
+            <div class="input-group">
+              <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+              <input type="text" id="doctorLiveSearch" name="q" value="{{ search_query }}" class="form-control border-start-0" placeholder="Search doctor or specialty...">
+            </div>
+            {% if search_query or selected_dept != 'All' %}
+              <a href="{% url 'doctor_list' %}" class="btn btn-outline-secondary" title="Clear Filters">
+                <i class="fas fa-times"></i>
+              </a>
+            {% endif %}
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Filter Summary -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div class="small text-muted">
+        Showing <strong>{{ doctors.count }}</strong> specialist doctor{% if doctors.count != 1 %}s{% endif %}
+        {% if selected_dept and selected_dept != 'All' %}
+          in <span class="badge bg-primary text-white">{{ selected_dept }}</span>
+        {% endif %}
+        {% if search_query %}
+          matching "<strong>{{ search_query }}</strong>"
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Doctor Grid -->
+    <div class="row g-4" id="doctorsGridContainer">
+      {% for doctor in doctors %}
+        <div class="col-lg-4 col-md-6 doctor-item-col" data-dept="{{ doctor.department }}">
+          <div class="card card-modern h-100 p-4 border-0">
+            <!-- Doctor Header -->
+            <div class="d-flex align-items-start gap-3 mb-3">
+              <div class="doctor-avatar-circle">
+                <i class="fas fa-user-doctor"></i>
+              </div>
+              <div class="flex-grow-1 overflow-hidden">
+                <div class="d-flex justify-content-between align-items-start">
+                  <span class="doctor-badge-dept dept-{{ doctor.department }} mb-1">
+                    {{ doctor.department }}
+                  </span>
+                  {% if doctor.active %}
+                    <span class="badge bg-success-subtle text-success small" title="Accepting Appointments">
+                      <i class="fas fa-circle-check me-1"></i> Active
+                    </span>
+                  {% else %}
+                    <span class="badge bg-secondary-subtle text-muted small">Unavailable</span>
+                  {% endif %}
+                </div>
+                <h5 class="fw-bold mb-0 text-truncate">Dr. {{ doctor.name }}</h5>
+                <small class="text-muted d-block text-truncate">{{ doctor.qualification }} &bull; {{ doctor.experience_years }}+ yrs exp</small>
+              </div>
+            </div>
+
+            <!-- Doctor Specialization -->
+            <div class="mb-3">
+              <span class="small text-muted d-block">Specialization:</span>
+              <p class="fw-semibold text-dark mb-0 small">{{ doctor.specialization }}</p>
+            </div>
+
+            <!-- Consultation Fee & Availability Block -->
+            <div class="bg-light p-3 rounded-3 mb-3 small flex-grow-1">
+              <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                <span class="text-muted"><i class="fas fa-calendar-day text-primary me-1"></i> Available Days:</span>
+                <span class="fw-bold text-dark">{{ doctor.available_days }}</span>
+              </div>
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="text-muted"><i class="fas fa-receipt text-success me-1"></i> Consultation Fee:</span>
+                <span class="badge bg-white text-primary border fs-6 fw-bold">${{ doctor.consultation_fee }}</span>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="row g-2 mt-auto">
+              <div class="col-7">
+                {% if doctor.active %}
+                  <a href="{% url 'appointment_book' doctor.id %}" class="btn btn-primary-custom w-100 btn-sm py-2">
+                    <i class="fas fa-calendar-plus me-1"></i> Book Slot
+                  </a>
+                {% else %}
+                  <button class="btn btn-secondary w-100 btn-sm py-2" disabled>
+                    Currently Inactive
+                  </button>
+                {% endif %}
+              </div>
+              <div class="col-5">
+                <a href="{% url 'doctor_detail' doctor.id %}" class="btn btn-secondary-custom w-100 btn-sm py-2 text-center">
+                  Profile
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% empty %}
+        <div class="col-12">
+          <div class="card border-0 shadow-sm text-center py-5 rounded-4">
+            <div class="text-muted mb-3 fs-1">
+              <i class="fas fa-user-doctor-slash"></i>
+            </div>
+            <h4 class="fw-bold text-dark">No Doctors Found</h4>
+            <p class="text-muted mb-3">No specialists match your current filter or search criteria.</p>
+            <div>
+              <a href="{% url 'doctor_list' %}" class="btn btn-primary-custom btn-pill">
+                Reset All Filters
+              </a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

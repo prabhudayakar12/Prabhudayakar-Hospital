@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Medical Staff & Doctor Portal Login | CarePulse Hospital{% endblock %}
+
+{% block content %}
+<section class="py-5" style="min-height: 75vh; display: flex; align-items: center;">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-6 col-lg-5">
+        <div class="card card-modern p-4 p-md-5 border-0 shadow-lg">
+          <div class="text-center mb-4">
+            <div class="brand-icon-box mx-auto mb-2" style="width: 52px; height: 52px; font-size: 1.5rem;">
+              <i class="fas fa-user-shield"></i>
+            </div>
+            <h3 class="fw-bold mb-1">Staff Portal Login</h3>
+            <p class="text-muted small">Authorized access for hospital staff & medical administrators</p>
+          </div>
+
+          <form method="POST" novalidate>
+            {% csrf_token %}
+
+            <div class="mb-3">
+              <label for="id_username" class="form-label">Username</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light border-end-0"><i class="fas fa-user text-muted"></i></span>
+                <input type="text" name="username" autofocus required id="id_username" class="form-control border-start-0" placeholder="Enter staff username">
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <label for="id_password" class="form-label">Password</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light border-end-0"><i class="fas fa-lock text-muted"></i></span>
+                <input type="password" name="password" required id="id_password" class="form-control border-start-0" placeholder="Enter password">
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary-custom w-100 py-2 fs-6 shadow">
+              <i class="fas fa-sign-in-alt me-1"></i> Sign In to Staff Dashboard
+            </button>
+          </form>
+
+          <div class="mt-4 pt-3 border-top text-center">
+            <div class="alert alert-info py-2 px-3 small border-0 text-start mb-0">
+              <i class="fas fa-circle-info me-1"></i> <strong>Capstone Demo Credentials:</strong><br>
+              Username: <code class="text-dark">admin</code> &bull; Password: <code class="text-dark">admin123</code><br>
+              <span class="text-muted small">(Created automatically via the sample data seed command)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

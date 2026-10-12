@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Medical Report for Appt #CP-{{ appointment.id }} | CarePulse Hospital{% endblock %}
+
+{% block content %}
+<section class="py-4 bg-white border-bottom">
+  <div class="container">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-1 small">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'staff_appointments' %}">Staff Portal</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Medical Report</li>
+      </ol>
+    </nav>
+    <h2 class="fw-bold mb-0">Issue Clinical Consultation Report</h2>
+    <small class="text-muted">Record clinical findings, medication prescriptions, and follow-up directives.</small>
+  </div>
+</section>
+
+<section class="py-5 bg-light">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-9">
+        <div class="card card-modern p-4 p-md-5 border-0 shadow-sm">
+          <!-- Consultation Header -->
+          <div class="p-3 bg-light rounded-3 mb-4 border">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <span class="small text-muted d-block">Patient Information</span>
+                <h5 class="fw-bold mb-0">{{ appointment.patient.name }}</h5>
+                <div class="small text-muted">Phone: {{ appointment.patient.phone }} &bull; Age: {{ appointment.patient.get_age|default:"N/A" }} &bull; Gender: {{ appointment.patient.gender }}</div>
+              </div>
+              <div class="col-md-6 text-md-end">
+                <span class="small text-muted d-block">Consulting Physician</span>
+                <h5 class="fw-bold mb-0">Dr. {{ appointment.doctor.name }}</h5>
+                <div class="small text-muted">{{ appointment.doctor.department }} &bull; {{ appointment.date|date:"M d, Y" }} at {{ appointment.time_slot }}</div>
+              </div>
+            </div>
+            <div class="mt-2 pt-2 border-top small text-muted">
+              <strong>Patient's Chief Complaint:</strong> {{ appointment.reason }}
+            </div>
+          </div>
+
+          <form method="POST">
+            {% csrf_token %}
+
+            <div class="mb-4">
+              <label for="id_diagnosis" class="form-label fw-bold">
+                <i class="fas fa-stethoscope text-primary me-1"></i> Clinical Diagnosis & Evaluation <span class="text-danger">*</span>
+              </label>
+              {{ form.diagnosis }}
+              <div class="form-text small">Detailed medical diagnosis and physical examination findings.</div>
+              {% if form.diagnosis.errors %}
+                <div class="text-danger small mt-1">{{ form.diagnosis.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <div class="mb-4">
+              <label for="id_prescription" class="form-label fw-bold">
+                <i class="fas fa-pills text-success me-1"></i> Prescribed Medications & Dosage <span class="text-danger">*</span>
+              </label>
+              {{ form.prescription }}
+              <div class="form-text small">List medicines, dosage frequency (e.g. 1-0-1 after meals), and duration.</div>
+              {% if form.prescription.errors %}
+                <div class="text-danger small mt-1">{{ form.prescription.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <div class="mb-4">
+              <label for="id_notes" class="form-label fw-bold">
+                <i class="fas fa-clipboard-check text-info me-1"></i> Dietary Advice & Follow-Up Notes
+              </label>
+              {{ form.notes }}
+              <div class="form-text small">Recommended lifestyle modifications, dietary advice, or return consultation timeframe.</div>
+              {% if form.notes.errors %}
+                <div class="text-danger small mt-1">{{ form.notes.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+              <a href="{% url 'staff_appointments' %}" class="btn btn-outline-secondary">
+                &larr; Cancel & Return to Dashboard
+              </a>
+              <button type="submit" class="btn btn-primary-custom px-4 py-2">
+                <i class="fas fa-floppy-disk me-1"></i> Save & Issue Medical Report
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

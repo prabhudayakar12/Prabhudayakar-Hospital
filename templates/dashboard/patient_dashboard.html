@@ -1,0 +1,333 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Patient Portal & Appointments Dashboard | CarePulse Hospital{% endblock %}
+
+{% block content %}
+<section class="py-5 bg-white border-bottom">
+  <div class="container">
+    <div class="row align-items-center g-4">
+      <div class="col-lg-7">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-2 small">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Patient Portal</li>
+          </ol>
+        </nav>
+        <h1 class="display-6 fw-bold mb-2">Patient Appointments Dashboard</h1>
+        <p class="text-muted mb-0">
+          Review upcoming outpatient consultations, track appointment confirmations, and view clinical diagnosis reports.
+        </p>
+      </div>
+
+      <!-- Patient Phone/Email Lookup Form -->
+      <div class="col-lg-5">
+        <div class="card card-modern p-3 border-0 bg-light">
+          <span class="small text-muted fw-bold mb-2 d-block">
+            <i class="fas fa-search me-1 text-primary"></i> Switch / Lookup Patient Account
+          </span>
+          <form method="GET" action="{% url 'patient_dashboard' %}" class="d-flex gap-2">
+            <input type="text" name="patient_query" value="{{ active_query }}" class="form-control" placeholder="Enter Phone or Email..." required>
+            <button type="submit" class="btn btn-primary-custom px-3">
+              <i class="fas fa-magnifying-glass"></i>
+            </button>
+          </form>
+          {% if patient %}
+            <div class="small text-success mt-2 d-flex align-items-center gap-1">
+              <i class="fas fa-user-circle"></i> Viewing records for: <strong>{{ patient.name }}</strong> ({{ patient.phone }})
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="py-5">
+  <div class="container">
+    {% if not patient and not active_query %}
+      <!-- Empty state: Enter phone to search -->
+      <div class="card card-modern p-5 text-center border-0 max-w-700 mx-auto">
+        <div class="stat-icon bg-primary-subtle text-primary mx-auto mb-3" style="width: 72px; height: 72px; font-size: 2rem;">
+          <i class="fas fa-id-card-clip"></i>
+        </div>
+        <h3 class="fw-bold mb-2">Access Your Patient Portal</h3>
+        <p class="text-muted mb-4">
+          Enter the mobile number or email address you used when booking an appointment to view your consultation schedule and clinical records.
+        </p>
+        <form method="GET" action="{% url 'patient_dashboard' %}" class="row g-2 justify-content-center">
+          <div class="col-sm-8">
+            <input type="text" name="patient_query" class="form-control form-control-lg" placeholder="e.g. +1 234 567 8900 or email" required>
+          </div>
+          <div class="col-sm-4">
+            <button type="submit" class="btn btn-primary-custom btn-lg w-100">
+              <i class="fas fa-search me-1"></i> View Portal
+            </button>
+          </div>
+        </form>
+        <div class="mt-4 pt-3 border-top small text-muted">
+          Haven't booked an appointment yet? <a href="{% url 'doctor_list' %}" class="text-primary fw-bold text-decoration-none">Book with a Specialist &rarr;</a>
+        </div>
+      </div>
+    {% else %}
+
+      <!-- SECTION: Dashboard Summary Cards -->
+      <div class="row g-4 mb-5">
+        <div class="col-md-3 col-6">
+          <div class="stat-card">
+            <div class="stat-icon bg-primary-subtle text-primary">
+              <i class="fas fa-calendar-check"></i>
+            </div>
+            <div>
+              <div class="stat-number">{{ total_count }}</div>
+              <div class="stat-label">Total Appointments</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-3 col-6">
+          <div class="stat-card">
+            <div class="stat-icon bg-info-subtle text-info">
+              <i class="fas fa-clock"></i>
+            </div>
+            <div>
+              <div class="stat-number">{{ upcoming_count }}</div>
+              <div class="stat-label">Upcoming</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-3 col-6">
+          <div class="stat-card">
+            <div class="stat-icon bg-success-subtle text-success">
+              <i class="fas fa-circle-check"></i>
+            </div>
+            <div>
+              <div class="stat-number">{{ completed_count }}</div>
+              <div class="stat-label">Completed</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-3 col-6">
+          <div class="stat-card">
+            <div class="stat-icon bg-danger-subtle text-danger">
+              <i class="fas fa-circle-xmark"></i>
+            </div>
+            <div>
+              <div class="stat-number">{{ cancelled_count }}</div>
+              <div class="stat-label">Cancelled</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION: Upcoming Appointments -->
+      <div class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h4 class="fw-bold mb-0">
+            <i class="fas fa-clock text-primary me-2"></i> Upcoming Consultations
+          </h4>
+          <a href="{% url 'doctor_list' %}" class="btn btn-primary-custom btn-sm btn-pill">
+            <i class="fas fa-plus me-1"></i> Book New Appointment
+          </a>
+        </div>
+
+        {% if upcoming_appointments %}
+          <div class="row g-4">
+            {% for appt in upcoming_appointments %}
+              <div class="col-lg-6">
+                <div class="card card-modern p-4 border-0 h-100">
+                  <div class="d-flex justify-content-between align-items-start mb-3 pb-2 border-bottom">
+                    <div>
+                      <span class="badge badge-status {{ appt.status }} mb-1">
+                        {{ appt.status }}
+                      </span>
+                      <div class="small text-muted">Token: #CP-{{ appt.id }}</div>
+                    </div>
+                    <div class="text-end">
+                      <span class="badge bg-light text-dark border px-3 py-1 fs-6 fw-bold">
+                        {{ appt.date|date:"M d, Y" }}
+                      </span>
+                      <div class="small text-primary fw-bold mt-1"><i class="fas fa-clock me-1"></i>{{ appt.time_slot }}</div>
+                    </div>
+                  </div>
+
+                  <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="doctor-avatar-circle" style="width: 54px; height: 54px; font-size: 1.4rem;">
+                      <i class="fas fa-user-doctor"></i>
+                    </div>
+                    <div>
+                      <h5 class="fw-bold mb-0">Dr. {{ appt.doctor.name }}</h5>
+                      <span class="doctor-badge-dept dept-{{ appt.doctor.department }} small">{{ appt.doctor.department }}</span>
+                    </div>
+                  </div>
+
+                  <div class="bg-light p-3 rounded-3 small mb-3 flex-grow-1">
+                    <strong class="text-muted d-block mb-1">Reason for Visit:</strong>
+                    <div class="text-dark">{{ appt.reason }}</div>
+                  </div>
+
+                  <div class="d-flex justify-content-between align-items-center pt-2">
+                    <span class="small text-muted">Fee: <strong class="text-dark">${{ appt.doctor.consultation_fee }}</strong></span>
+                    <a href="{% url 'appointment_success' appt.id %}" class="btn btn-sm btn-outline-secondary">
+                      <i class="fas fa-receipt me-1"></i> View Receipt Slip
+                    </a>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="card border-0 shadow-sm p-4 text-center rounded-4 bg-light">
+            <p class="text-muted mb-0">No upcoming appointments scheduled at this time.</p>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- SECTION: Past Appointments & Medical Reports -->
+      <div>
+        <h4 class="fw-bold mb-4">
+          <i class="fas fa-history text-secondary me-2"></i> Past Appointments & Medical Reports
+        </h4>
+
+        {% if past_appointments %}
+          <div class="card card-modern border-0 overflow-hidden">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>Token</th>
+                    <th>Doctor</th>
+                    <th>Department</th>
+                    <th>Date & Time</th>
+                    <th>Status</th>
+                    <th>Reason</th>
+                    <th class="text-end">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for appt in past_appointments %}
+                    <tr>
+                      <td class="fw-bold">#CP-{{ appt.id }}</td>
+                      <td>
+                        <div class="fw-semibold">Dr. {{ appt.doctor.name }}</div>
+                        <small class="text-muted">{{ appt.doctor.qualification }}</small>
+                      </td>
+                      <td>
+                        <span class="doctor-badge-dept dept-{{ appt.doctor.department }} small">
+                          {{ appt.doctor.department }}
+                        </span>
+                      </td>
+                      <td>
+                        <div>{{ appt.date|date:"M d, Y" }}</div>
+                        <small class="text-muted">{{ appt.time_slot }}</small>
+                      </td>
+                      <td>
+                        <span class="badge badge-status {{ appt.status }} small">
+                          {{ appt.status }}
+                        </span>
+                      </td>
+                      <td class="small text-muted text-truncate" style="max-width: 200px;">
+                        {{ appt.reason }}
+                      </td>
+                      <td class="text-end">
+                        {% if appt.medical_report %}
+                          <!-- Trigger Modal for Medical Report -->
+                          <button type="button" class="btn btn-sm btn-success text-white" data-bs-toggle="modal" data-bs-target="#reportModal{{ appt.id }}">
+                            <i class="fas fa-file-prescription me-1"></i> View Report
+                          </button>
+                        {% else %}
+                          <a href="{% url 'appointment_success' appt.id %}" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-receipt me-1"></i> Slip
+                          </a>
+                        {% endif %}
+                      </td>
+                    </tr>
+
+                    <!-- Medical Report Modal -->
+                    {% if appt.medical_report %}
+                      <div class="modal fade" id="reportModal{{ appt.id }}" tabindex="-1" aria-labelledby="reportModalLabel{{ appt.id }}" aria-hidden="true">
+                        <div class="modal-dialog modal-lg modal-dialog-centered">
+                          <div class="modal-content border-0 shadow-lg rounded-4">
+                            <div class="modal-header bg-primary text-white">
+                              <h5 class="modal-title fw-bold" id="reportModalLabel{{ appt.id }}">
+                                <i class="fas fa-notes-medical me-2"></i> Clinical Consultation Report
+                              </h5>
+                              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body p-4">
+                              <div class="d-flex justify-content-between align-items-center pb-3 mb-3 border-bottom">
+                                <div>
+                                  <h6 class="fw-bold mb-0">CarePulse Multi-Speciality Hospital</h6>
+                                  <small class="text-muted">Report Date: {{ appt.medical_report.report_date|date:"F d, Y h:i A" }}</small>
+                                </div>
+                                <span class="badge bg-success-subtle text-success fs-6">Official Report</span>
+                              </div>
+
+                              <div class="row g-3 mb-4">
+                                <div class="col-sm-6">
+                                  <div class="p-3 bg-light rounded-3">
+                                    <div class="small text-muted">Consulting Doctor</div>
+                                    <div class="fw-bold fs-6">Dr. {{ appt.doctor.name }}</div>
+                                    <div class="small text-muted">{{ appt.doctor.department }} &bull; {{ appt.doctor.qualification }}</div>
+                                  </div>
+                                </div>
+                                <div class="col-sm-6">
+                                  <div class="p-3 bg-light rounded-3">
+                                    <div class="small text-muted">Patient Name</div>
+                                    <div class="fw-bold fs-6">{{ appt.patient.name }}</div>
+                                    <div class="small text-muted">Phone: {{ appt.patient.phone }} &bull; Age: {{ appt.patient.get_age|default:"N/A" }} yrs</div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div class="mb-4">
+                                <h6 class="fw-bold text-dark"><i class="fas fa-stethoscope text-primary me-2"></i> Clinical Diagnosis & Evaluation</h6>
+                                <div class="p-3 bg-light rounded-3">
+                                  {{ appt.medical_report.diagnosis|linebreaks }}
+                                </div>
+                              </div>
+
+                              <div class="mb-4">
+                                <h6 class="fw-bold text-dark"><i class="fas fa-pills text-success me-2"></i> Prescriptions & Dosage</h6>
+                                <div class="p-3 bg-light rounded-3 font-monospace small">
+                                  {{ appt.medical_report.prescription|linebreaks }}
+                                </div>
+                              </div>
+
+                              {% if appt.medical_report.notes %}
+                                <div class="mb-3">
+                                  <h6 class="fw-bold text-dark"><i class="fas fa-clipboard-check text-info me-2"></i> Doctor Notes & Advice</h6>
+                                  <div class="p-3 bg-light rounded-3 small">
+                                    {{ appt.medical_report.notes|linebreaks }}
+                                  </div>
+                                </div>
+                              {% endif %}
+                            </div>
+                            <div class="modal-footer bg-light">
+                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                              <button type="button" onclick="window.print()" class="btn btn-primary-custom">
+                                <i class="fas fa-print me-1"></i> Print Report
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    {% endif %}
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        {% else %}
+          <div class="card border-0 shadow-sm p-4 text-center rounded-4 bg-light">
+            <p class="text-muted mb-0">No past consultation records on file.</p>
+          </div>
+        {% endif %}
+      </div>
+
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
